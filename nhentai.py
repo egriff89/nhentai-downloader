@@ -17,7 +17,7 @@ def get_homepage(code):
 
 def get_title(page):
     element = page.find(name='title').contents[0]
-    match = re.search(r'^([\w\d\!\-\?\s]*)', element, flags=re.IGNORECASE)
+    match = re.search(r'^([\w\d\!\-\?\s\,\.]*)', element, flags=re.IGNORECASE)
 
     if match:
         return match.group(1).strip()
@@ -42,9 +42,7 @@ def download_page(code, page, title='nhentai'):
     element = soup.find(id='image-container').contents[0]
 
     # Parse the image URL from the <img> element
-    img_url = re.search(r'src="(.+)\.(jpg|png|svg)"', str(element), flags=re.IGNORECASE)
-    if img_url:
-        pass
+    img_url = re.search(r'src="(.+)\.(jpe?g|png|svg)"', str(element), flags=re.IGNORECASE)
     
     # Generate the new filename
     img_ext = img_url.group(2)
@@ -54,7 +52,8 @@ def download_page(code, page, title='nhentai'):
     try:
         os.mkdir(f'{code}-{title}')
     except OSError as error:
-        print('Directory already exists. Continuing on')
+        # Directory exists, continuing
+        pass
 
     # Download page
     with open(f'{code}-{title}/{code}-{page}.{img_ext}', mode='wb') as file:
@@ -69,6 +68,9 @@ def main():
     print(f'Title: {title}')
     print(f'Pages: {pages}')
     print(f'Gallery ID: {code}')
+
+    with open('history.txt', mode='a') as f:
+        f.write(f'{code} - {title}\n')
 
     print('Downloading...')
 
