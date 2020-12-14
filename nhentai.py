@@ -1,83 +1,78 @@
-from bs4 import BeautifulSoup
-import requests
+from utils import utils
+import argparse
 import sys
-import os
-import re
 
-if len(sys.argv) > 0:
-    code = sys.argv[1].strip()
-else:
-    sys.exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument('-n', '--number', type=int, help='6-digit gallery number. Example: 209519')
+parser.add_argument('-i', '--info', action='store_true', help='Only show infomation and tags')
+parser.add_argument('-r', '--random', action='store_true', help='Select a random doujinshi')
+args = parser.parse_args()
 
-def get_homepage(code):
-    # Request the landing page relative to the provided code
-    # Parse the response content as HTML
-    response = requests.get(f'https://nhentai.net/g/{code}')
-    return BeautifulSoup(response.content, 'html.parser')
+info = utils.info
 
-def get_title(page):
-    element = page.find(name='title').contents[0]
-    match = re.search(r'^([\w\d\!\-\?\s\,\.]*)', element, flags=re.IGNORECASE)
+# If no arguments provided, print help and exit
+if len(sys.argv) == 1:
+    parser.print_help()
+    sys.exit(0)
 
-    if match:
-        return match.group(1).strip()
+if args.random:
+    utils.get_random()
 
-def get_num_pages(page):    
-    # Grab the section of the page containing the doujin info
-    # and the nested <span> tags with the class 'name'
-    fields = page.find_all('span', class_='name')
+if args.number:
+    info['code'] = args.number
+    info['url'] = f'https://nhentai.net/g/{info["code"]}'
+
+
+def print_info():
+    """Print doujinshi information"""
     
-    # Look for a <span> tag within 'fields' that just contains numbers
-    # and return it
-    regex = re.compile(r'^(\d+)$')
-    for span in fields:
-        match = re.search(regex, span.text)
-        if match: 
-            return int(match.group(1))
+    # Grab remaining tags
+    utils.get_tags(info['code'])
 
-def download_page(code, page, title='nhentai'):
-    # Obtain the URL of the image
-    response = requests.get(f'https://nhentai.net/g/{code}/{page}')
-    soup = BeautifulSoup(response.content, 'html.parser')
-    element = soup.find(id='image-container').contents[0]
+    print(f'\nTitle: {info["title"]}')
+    print(f'Parodies: {info["parody"][0]}')
 
-    # Parse the image URL from the <img> element
-    img_url = re.search(r'src="(.+)\.(jpe?g|png|svg)"', str(element), flags=re.IGNORECASE)
-    
-    # Generate the new filename
-    img_ext = img_url.group(2)
-    filename = f'{img_url.group(1)}.{img_ext}'
+    print(f'Characters: ', end='')
+    for ch in info['characters']: print(f'"{ch}"', end=' ')
 
-    # Create the download directory
-    try:
-        os.mkdir(f'{code}-{title}')
-    except OSError as error:
-        # Directory exists, continuing
-        pass
+    print(f'\nTags: ', end='')
+    for tag in info['tags']: print(f'"{tag}"', end=' ')
 
-    # Download page
-    with open(f'{code}-{title}/{code}-{page}.{img_ext}', mode='wb') as file:
-        dl = requests.get(str(filename))
-        file.write(dl.content)
+    print(f'\nArtists: ', end='')
+    for artist in info['artists']: print(f'"{artist}"', end=' ')
+
+    print(f'\nGroups: ', end='')
+    for group in info['groups']: print(f'"{group}"', end=' ')
+
+    print(f'\nLanguages: ', end='')
+    for lang in info['languages']: print(f'"{lang}"', end=' ')
+
+    print(f'\nCategories: ', end='')
+    for cat in info['categories']: print(f'"{cat}"', end=' ')
+
+    print(f'\nGallery ID: {info["code"]}')
+    print(f'Pages: {info["pages"]}')
+    print(f'Uploaded: {info["uploaded"]}\n')
+
 
 def main():
-    homepage = get_homepage(code)
-    title = get_title(homepage)
-    pages = get_num_pages(homepage)
+    homepage = utils.get_homepage(info['code'])
+    info['title'] = utils.get_title(homepage)
+    info['pages'] = utils.get_num_pages(homepage)
 
-    print(f'Title: {title}')
-    print(f'Pages: {pages}')
-    print(f'Gallery ID: {code}')
-
-    with open('history.txt', mode='a') as f:
-        f.write(f'{code} - {title}\n')
+    if args.info:
+        print_info()
+        sys.exit(0)
+    else:
+        # Print information and exit
+        print_info()
 
     print('Downloading...')
 
-    for page in range(1, pages + 1):
-        download_page(code, page, title)
+    for page in range(1, info["pages"] + 1):
+        utils.download_page(info["code"], page, info["title"])
 
-    print('Done!')
+    print('Done!\n')
 
 if __name__ == '__main__':
     main()
