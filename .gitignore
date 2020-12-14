@@ -1,4 +1,5 @@
 .vscode/
+utils/__pycache__
 venv/
 *-*/
 history.txt
