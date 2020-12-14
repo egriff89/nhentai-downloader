@@ -4,5 +4,11 @@ python:
   - "3.7"
   - "3.8"
 
-  script:
-    - python3 nhentai.py -in 209519
+# safelist
+branches:
+  only:
+    - master
+    - dev
+
+script:
+  - python3 nhentai.py -in 209519
