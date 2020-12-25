@@ -18,6 +18,19 @@ info = {
 }
 
 
+def verify_tag(tag):
+    global info
+    if len(info[tag]) == 0:
+        return False
+
+    for key in info.keys():
+        if type(info[key]) is list:
+            if len(info[key]) == 0:
+                info[key].append(None)
+
+    return True
+
+
 def get_random():
     print('Getting random doujinshi...')
     response = requests.get('https://nhentai.net/random')
@@ -48,7 +61,7 @@ def get_title(page):
     :rtype: string
     """
     element = page.find(name='title').contents[0]
-    match = re.search(r'^([\w\d\!\-\?\s\,\.]*)', element, flags=re.IGNORECASE)
+    match = re.search(r'^([\w\d\W]+)\u00BB', element, flags=re.IGNORECASE)
 
     if match:
         return match.group(1).strip()

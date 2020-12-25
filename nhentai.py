@@ -30,25 +30,48 @@ def print_info():
     utils.get_tags(info['code'])
 
     print(f'\nTitle: {info["title"]}')
-    print(f'Parodies: {info["parody"][0]}')
 
-    print(f'Characters: ', end='')
-    for ch in info['characters']: print(f'"{ch}"', end=' ')
+    if utils.verify_tag('parody'): 
+        print(f'Parodies: ', end=' ')
+        for parody in info['parody']:
+            if parody is None: pass
+            else: print (f'"{parody}"', end=' ')
 
-    print(f'\nTags: ', end='')
-    for tag in info['tags']: print(f'"{tag}"', end=' ')
+    if utils.verify_tag('characters'):
+        print(f'\nCharacters: ', end='')
+        for ch in info['characters']: 
+            if ch is None: pass
+            else: print(f'"{ch}"', end=' ')
 
-    print(f'\nArtists: ', end='')
-    for artist in info['artists']: print(f'"{artist}"', end=' ')
+    if utils.verify_tag('tags'):
+        print(f'\nTags: ', end='')
+        for tag in info['tags']: 
+            if tag is None: pass
+            else: print(f'"{tag}"', end=' ')
 
-    print(f'\nGroups: ', end='')
-    for group in info['groups']: print(f'"{group}"', end=' ')
+    if utils.verify_tag('artists'):
+        print(f'\nArtists: ', end='')
+        for artist in info['artists']: 
+            if artist is None: print('N/A', end=' ')
+            else: print(f'"{artist}"', end=' ')
 
-    print(f'\nLanguages: ', end='')
-    for lang in info['languages']: print(f'"{lang}"', end=' ')
+    if utils.verify_tag('groups'):
+        print(f'\nGroups: ', end='')
+        for group in info['groups']: 
+            if group is None: print('N/A', end=' ')
+            else: print(f'"{group}"', end=' ')
 
-    print(f'\nCategories: ', end='')
-    for cat in info['categories']: print(f'"{cat}"', end=' ')
+    if utils.verify_tag('languages'):
+        print(f'\nLanguages: ', end='')
+        for lang in info['languages']: 
+            if lang is None: pass
+            else: print(f'"{lang}"', end=' ')
+
+    if utils.verify_tag('categories'):
+        print(f'\nCategories: ', end='')
+        for cat in info['categories']: 
+            if cat is None: pass
+            else: print(f'"{cat}"', end=' ')
 
     print(f'\nGallery ID: {info["code"]}')
     print(f'Pages: {info["pages"]}')
@@ -60,12 +83,13 @@ def main():
     info['title'] = utils.get_title(homepage)
     info['pages'] = utils.get_num_pages(homepage)
 
+    
     if args.info:
+        # Only info requested - quit
         print_info()
         sys.exit(0)
-    else:
-        # Print information and exit
-        print_info()
+
+    print_info()
 
     print('Downloading...')
 
