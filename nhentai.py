@@ -6,6 +6,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--number', type=int, help='6-digit gallery number. Example: 209519')
 parser.add_argument('-i', '--info', action='store_true', help='Only show infomation and tags')
 parser.add_argument('-r', '--random', action='store_true', help='Select a random doujinshi')
+parser.add_argument('-z', '--zip', action='store_true', help='Compress downloaded files')
 args = parser.parse_args()
 
 info = utils.info
@@ -95,6 +96,15 @@ def main():
 
     for page in range(1, info["pages"] + 1):
         utils.download_page(info["code"], page, info["title"])
+
+    # Compress to .zip and remove original directory
+    # if specified with the '-z' or '--zip' flag
+    if args.zip:
+        dir_name = f'{info["code"]}-{info["title"]}'
+        print(f'Compressing to "{dir_name}.zip" ...')
+        utils.compress(dir_name)
+        print('Removing downloaded files...')
+        utils.remove_dir(dir_name)
 
     print('Done!\n')
 
