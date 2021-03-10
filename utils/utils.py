@@ -6,6 +6,7 @@ import os
 import re
 
 
+# Information for the selected doujinshi
 info = {
     'title': '',
     'parody': [],
@@ -20,20 +21,26 @@ info = {
 }
 
 
-def verify_tag(tag):
+def verify_tag_category(category):
+    """Check validity of tag category before its contents can be printed
+    
+    :param category: Category containing tags assigned to a doujinshi
+    """
     global info
-    if len(info[tag]) == 0:
-        return False
+    # Provided category is empty
+    if len(info[category]) == 0: return False
 
+    # Loop through dict keys
     for key in info.keys():
+        # Append 'None' type to the key's value if it's an empty list
         if type(info[key]) is list:
             if len(info[key]) == 0:
                 info[key].append(None)
-
     return True
 
 
 def get_random():
+    """Get random doujinshi"""
     print('Getting random doujinshi...')
     response = requests.get('https://nhentai.net/random')
     url = response.request.url
@@ -44,10 +51,9 @@ def get_random():
         info['code'] = match.group(1)
 
 
-def get_homepage(code):
+def get_homepage():
     """Request the landing page relative to the provided code
 
-    :param code: Six-digit code referencing target doujinshi
     :rtype: BeautifulSoup object
     """
     global info
@@ -108,28 +114,29 @@ def download_page(code, page, title='nhentai'):
     filename = f'{img_url.group(1)}.{img_ext}'
 
     # Create the download directory
-    try:
-        os.mkdir(f'{code}-{title}')
-    except OSError as error:
-        # Directory exists, continuing
-        pass
+    collection_path = f'collection/{code}-{title}'
+    os.makedirs(collection_path, exist_ok=True)
 
     # Download page
-    with open(f'{code}-{title}/{code}-{page}.{img_ext}', mode='wb') as file:
+    with open(f'{collection_path}/{code}-{page}.{img_ext}', mode='wb') as file:
         dl = requests.get(str(filename))
         file.write(dl.content)
 
 
-def get_tags(code):
+def get_tags():
     """Retrieve all tags for selected doujinshi"""
     tag_rx = re.compile(r'/(.+)/.+/', re.IGNORECASE)
-    html = get_homepage(code)
+    html = get_homepage()
 
     info['uploaded'] = html.find('time', class_='nobold').contents[0]
     tags = html.find_all('span', class_='tags')
 
+    # Loop through HTML <span> elements with the class of 'tags'
     for tag in tags:
         for t in tag.contents:
+
+            # Query the child elements' href attribute and append their contents
+            # to the appropriate list in the 'info' dict
             try:
                 match = re.search(tag_rx, t.attrs['href'])
                 if match:
@@ -152,7 +159,10 @@ def get_tags(code):
 
 
 def compress(dir_name):
-    """Compress downloaded files into separate archive"""
+    """Compress downloaded files into separate archive
+    
+    :param dir_name:  Directory name containing the downloaded images
+    """
     try:
         with zipfile.ZipFile(f'{dir_name}.zip', mode='w') as zip:
             with os.scandir(dir_name) as files:
@@ -164,7 +174,10 @@ def compress(dir_name):
 
 
 def remove_dir(dir_name):
-    """Remove downloaded files and corresponding directory"""
+    """Remove downloaded files and corresponding directory
+    
+    :param dir_name:  Directory name containing the downloaded images
+    """
     try:
         with os.scandir(dir_name) as files:
             for file in files:

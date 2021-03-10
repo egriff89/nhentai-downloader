@@ -9,6 +9,7 @@ parser.add_argument('-r', '--random', action='store_true', help='Select a random
 parser.add_argument('-z', '--zip', action='store_true', help='Compress downloaded files')
 args = parser.parse_args()
 
+# Import info dictionary
 info = utils.info
 
 # If no arguments provided, print help and exit
@@ -28,47 +29,47 @@ def print_info():
     """Print doujinshi information"""
     
     # Grab remaining tags
-    utils.get_tags(info['code'])
+    utils.get_tags()
 
     print(f'\nTitle: {info["title"]}')
 
-    if utils.verify_tag('parody'): 
+    if utils.verify_tag_category('parody'): 
         print(f'Parodies: ', end=' ')
         for parody in info['parody']:
             if parody is None: pass
-            else: print (f'"{parody}"', end=' ')
+            else: print(f'"{parody}"', end=' ')
 
-    if utils.verify_tag('characters'):
+    if utils.verify_tag_category('characters'):
         print(f'\nCharacters: ', end='')
         for ch in info['characters']: 
             if ch is None: pass
             else: print(f'"{ch}"', end=' ')
 
-    if utils.verify_tag('tags'):
+    if utils.verify_tag_category('tags'):
         print(f'\nTags: ', end='')
         for tag in info['tags']: 
             if tag is None: pass
             else: print(f'"{tag}"', end=' ')
 
-    if utils.verify_tag('artists'):
+    if utils.verify_tag_category('artists'):
         print(f'\nArtists: ', end='')
         for artist in info['artists']: 
             if artist is None: print('N/A', end=' ')
             else: print(f'"{artist}"', end=' ')
 
-    if utils.verify_tag('groups'):
+    if utils.verify_tag_category('groups'):
         print(f'\nGroups: ', end='')
         for group in info['groups']: 
             if group is None: print('N/A', end=' ')
             else: print(f'"{group}"', end=' ')
 
-    if utils.verify_tag('languages'):
+    if utils.verify_tag_category('languages'):
         print(f'\nLanguages: ', end='')
         for lang in info['languages']: 
             if lang is None: pass
             else: print(f'"{lang}"', end=' ')
 
-    if utils.verify_tag('categories'):
+    if utils.verify_tag_category('categories'):
         print(f'\nCategories: ', end='')
         for cat in info['categories']: 
             if cat is None: pass
@@ -80,7 +81,7 @@ def print_info():
 
 
 def main():
-    homepage = utils.get_homepage(info['code'])
+    homepage = utils.get_homepage()
     info['title'] = utils.get_title(homepage)
     info['pages'] = utils.get_num_pages(homepage)
 
@@ -94,17 +95,19 @@ def main():
 
     print('Downloading...')
 
+    # Start downloading the pages.
+    # Creates a collection folder if it doesn't already exist
     for page in range(1, info["pages"] + 1):
         utils.download_page(info["code"], page, info["title"])
 
     # Compress to .zip and remove original directory
     # if specified with the '-z' or '--zip' flag
     if args.zip:
-        dir_name = f'{info["code"]}-{info["title"]}'
-        print(f'Compressing to "{dir_name}.zip" ...')
-        utils.compress(dir_name)
+        collection_path = f'collection/{info["code"]}-{info["title"]}'
+        print(f'Compressing to "{collection_path}.zip"...')
+        utils.compress(collection_path)
         print('Removing downloaded files...')
-        utils.remove_dir(dir_name)
+        utils.remove_dir(collection_path)
 
     print('Done!\n')
 
