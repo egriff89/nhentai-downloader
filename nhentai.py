@@ -1,6 +1,7 @@
 from utils import utils
 import argparse
 import sys
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--number', type=int, help='6-digit gallery number. Example: 209519')
@@ -100,14 +101,28 @@ def main():
     for page in range(1, info["pages"] + 1):
         utils.download_page(info["code"], page, info["title"])
 
+    # Verify title contains no illegal characters
+    valid, symbol = utils.validate_title(info['title'])
+    if not valid:
+        info['title'] = info['title'].replace(symbol, '-')
+
     # Compress to .zip and remove original directory
     # if specified with the '-z' or '--zip' flag
     if args.zip:
-        collection_path = f'collection/{info["code"]}-{info["title"]}'
+        # Change to 'collection' directory. Prevents 'collection/<files>' folder structure in zip file
+        os.chdir('collection')
+
+        # Compress downloaded files into a zip file
+        collection_path = f'{info["code"]}-{info["title"]}'
         print(f'Compressing to "{collection_path}.zip"...')
         utils.compress(collection_path)
+
+        # Delete downloaded files as they're no longer needed
         print('Removing downloaded files...')
         utils.remove_dir(collection_path)
+
+        # Return to root project directory
+        os.chdir('..')
 
     print('Done!\n')
 

@@ -94,7 +94,22 @@ def get_num_pages(page):
             return int(match.group(1))
 
 
-def download_page(code, page, title='nhentai'):
+def validate_title(title):
+    """Validate title contains no illegal characters
+    
+    :param title:  Title to validate
+    """
+    invalid = ['\\', '/', ':', '*', '?', '"', '<', '>', '|']
+
+    # Loop through title to check for invalid characters
+    for char in title:
+        for symbol in invalid:
+            if char == symbol:
+                # Current character is invalid
+                return (False, symbol)
+    return (True, None)
+
+def download_page(code, page, title='nhentai', valid=True):
     """Retrieve the URL of each page image and write it to disk
 
     :param code:  Gallery code of doujinshi
@@ -112,6 +127,11 @@ def download_page(code, page, title='nhentai'):
     # Generate the new filename
     img_ext = img_url.group(2)
     filename = f'{img_url.group(1)}.{img_ext}'
+
+    # Validate whether title is valid (contains no illegal characters)
+    valid, symbol = validate_title(title)
+    if not valid: 
+        title = title.replace(symbol, '-')
 
     # Create the download directory
     collection_path = f'collection/{code}-{title}'
