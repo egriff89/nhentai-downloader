@@ -1,3 +1,4 @@
+from utils.Doujinshi import Doujinshi
 from utils import utils
 import argparse
 import sys
@@ -10,8 +11,8 @@ parser.add_argument('-r', '--random', action='store_true', help='Select a random
 parser.add_argument('-z', '--zip', action='store_true', help='Compress downloaded files')
 args = parser.parse_args()
 
-# Import info dictionary
-info = utils.info
+# Create new doujinshi instance with default values
+dj = Doujinshi()
 
 # If no arguments provided, print help and exit
 if len(sys.argv) == 1:
@@ -19,92 +20,36 @@ if len(sys.argv) == 1:
     sys.exit(0)
 
 if args.random:
-    utils.get_random()
+    dj.get_random()
 
 if args.number:
-    info['code'] = args.number
-    info['url'] = f'https://nhentai.net/g/{info["code"]}'
-
-
-def print_info():
-    """Print doujinshi information"""
-    
-    # Grab remaining tags
-    utils.get_tags()
-
-    print(f'\nTitle: {info["title"]}')
-
-    if utils.verify_tag_category('parody'): 
-        print(f'Parodies: ', end=' ')
-        for parody in info['parody']:
-            if parody is None: pass
-            else: print(f'"{parody}"', end=' ')
-
-    if utils.verify_tag_category('characters'):
-        print(f'\nCharacters: ', end='')
-        for ch in info['characters']: 
-            if ch is None: pass
-            else: print(f'"{ch}"', end=' ')
-
-    if utils.verify_tag_category('tags'):
-        print(f'\nTags: ', end='')
-        for tag in info['tags']: 
-            if tag is None: pass
-            else: print(f'"{tag}"', end=' ')
-
-    if utils.verify_tag_category('artists'):
-        print(f'\nArtists: ', end='')
-        for artist in info['artists']: 
-            if artist is None: print('N/A', end=' ')
-            else: print(f'"{artist}"', end=' ')
-
-    if utils.verify_tag_category('groups'):
-        print(f'\nGroups: ', end='')
-        for group in info['groups']: 
-            if group is None: print('N/A', end=' ')
-            else: print(f'"{group}"', end=' ')
-
-    if utils.verify_tag_category('languages'):
-        print(f'\nLanguages: ', end='')
-        for lang in info['languages']: 
-            if lang is None: pass
-            else: print(f'"{lang}"', end=' ')
-
-    if utils.verify_tag_category('categories'):
-        print(f'\nCategories: ', end='')
-        for cat in info['categories']: 
-            if cat is None: pass
-            else: print(f'"{cat}"', end=' ')
-
-    print(f'\nGallery ID: {info["code"]}')
-    print(f'Pages: {info["pages"]}')
-    print(f'Uploaded: {info["uploaded"]}\n')
-
+    dj.code = args.number
+    dj.url  = f'https://nhentai.net/g/{dj.code}'
 
 def main():
-    homepage = utils.get_homepage()
-    info['title'] = utils.get_title(homepage)
-    info['pages'] = utils.get_num_pages(homepage)
+    homepage = dj.get_homepage()
+    dj.get_title(homepage)
+    dj.get_num_pages(homepage)
 
     
     if args.info:
         # Only info requested - quit
-        print_info()
+        dj.print_info()
         sys.exit(0)
 
-    print_info()
+    dj.print_info()
 
     print('Downloading...')
 
     # Start downloading the pages.
     # Creates a collection folder if it doesn't already exist
-    for page in range(1, info["pages"] + 1):
-        utils.download_page(info["code"], page, info["title"])
+    for page in range(1, dj.pages + 1):
+        dj.download_page(page)
 
     # Verify title contains no illegal characters
-    valid, symbol = utils.validate_title(info['title'])
+    valid, symbol = dj.validate_title()
     if not valid:
-        info['title'] = info['title'].replace(symbol, '-')
+        dj.title = dj.title.replace(symbol, '-')
 
     # Compress to .zip and remove original directory
     # if specified with the '-z' or '--zip' flag
@@ -113,7 +58,7 @@ def main():
         os.chdir('collection')
 
         # Compress downloaded files into a zip file
-        collection_path = f'{info["code"]}-{info["title"]}'
+        collection_path = f'{dj.code}-{dj.title}'
         print(f'Compressing to "{collection_path}.zip"...')
         utils.compress(collection_path)
 
