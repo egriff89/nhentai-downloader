@@ -112,14 +112,12 @@ class Doujinshi:
         match = re.search(r'\/g\/(\d+)\/$', url)
         if match:
             self.code = match.group(1)
-        
-
+      
 
     def get_title(self, page):
         """Get the title of the doujinshi
 
         :param page: Parsed contents of doujinshi homepage
-        :rtype: string
         """
         element = page.find(name='title').contents[0]
         match = re.search(r'^([\w\d\W]+)\u00BB', element, flags=re.IGNORECASE)
@@ -132,7 +130,6 @@ class Doujinshi:
         """Return total number of pages
 
         :param page: Parsed contents of doujinshi homepage
-        :rtype: int
         """
         # Grab the section of the page containing the doujin info
         # and the nested <span> tags with the class 'name'
@@ -148,10 +145,7 @@ class Doujinshi:
 
 
     def validate_title(self):
-        """Validate title contains no illegal characters
-        
-        :param title:  Title to validate
-        """
+        """Validate title contains no illegal characters"""
         invalid = ['\\', '/', ':', '*', '?', '"', '<', '>', '|']
 
         # Loop through title to check for invalid characters
@@ -163,12 +157,10 @@ class Doujinshi:
         return (True, None)
 
 
-    def download_page(self, page, valid=True):
+    def download_page(self, page):
         """Retrieve the URL of each page image and write it to disk
 
-        :param code:  Gallery code of doujinshi
         :param page:  Page number to download
-        :param title: Title to construct filename. Default: 'nhentai'
         """
         # Obtain the URL of the image
         response = requests.get(f'{self.url}/{page}')
