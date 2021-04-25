@@ -4,6 +4,8 @@ import argparse
 import sys
 import os
 
+import time
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--number', type=int, help='6-digit gallery number. Example: 209519')
 parser.add_argument('-i', '--info', action='store_true', help='Only show infomation and tags')
@@ -41,10 +43,15 @@ def main():
 
     print('Downloading...')
 
+    # t1 = time.perf_counter()
     # Start downloading the pages.
     # Creates a collection folder if it doesn't already exist
     for page in range(1, dj.pages + 1):
         dj.download_page(page)
+
+    # dj.download_pages(dj.pages)
+
+    # t2 = time.perf_counter()
 
     # Verify title contains no illegal characters
     valid, symbol = dj.validate_title()
@@ -70,6 +77,8 @@ def main():
         os.chdir('..')
 
     print('Done!\n')
+
+    # print(f'Time: {t2-t1} seconds')
 
 if __name__ == '__main__':
     main()

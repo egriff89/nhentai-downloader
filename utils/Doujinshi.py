@@ -1,10 +1,12 @@
+from requests_futures.sessions import FuturesSession
 from bs4 import BeautifulSoup
 import requests
 import os
 import re
 
-class Doujinshi:
+class Doujinshi(object):
     def __init__(self, title='nhentai', code=0):
+        self.session    = FuturesSession()
         self.title      = title
         self.code       = code
         self.url        = f'https://nhentai.net/g/{self.code}'
@@ -17,6 +19,7 @@ class Doujinshi:
         self.__groups     = []
         self.__languages  = []
         self.__categories = []
+        self.__images     = []
 
     @property
     def parody(self):
@@ -73,6 +76,14 @@ class Doujinshi:
     @categories.setter
     def categories(self, cats):
         self.__categories = cats
+
+    @property
+    def images(self):
+        return self.__images
+
+    @images.setter
+    def images(self, url):
+        self.__images = url
 
 
     def verify_tag_category(self, category):
@@ -155,6 +166,39 @@ class Doujinshi:
                     # Current character is invalid
                     return (False, symbol)
         return (True, None)
+
+
+    def get_image_urls(self, page):
+        """Grab the URL for the image"""
+        response = self.session.get(f'{self.url}/{page}').result().content
+        soup = BeautifulSoup(response, 'html.parser')
+
+        img_container = soup.find('section', {'id': 'image-container'})
+        print(img_container.find('a').contents[0].attrs['src'])
+        self.images.append(img_container.find('a').contents[0].attrs['src'])
+ 
+
+    def download_pages(self, pages):
+        """Asynchronously download all images and write to disk"""
+
+        for page in range(1, pages + 1):
+            # Generate image URLs
+            self.get_image_urls(page)
+
+        # Create the download directory
+        collection_path = f'collection/{self.code}-{self.title}'
+        os.makedirs(collection_path, exist_ok=True)
+
+        # Validate whether title is valid (contains no illegal characters)
+        valid, symbol = self.validate_title()
+        if not valid: 
+            self.title = self.title.replace(symbol, '-')
+
+        # Download page
+        for page in range(self.pages):
+            with open(f'{collection_path}/{self.code}-{page + 1}.jpg', 'wb') as file:
+                response = self.session.get(self.images[page]).result().content
+                file.write(response)
 
 
     def download_page(self, page):
