@@ -34,7 +34,7 @@ class Doujinshi(object):
     def characters(self):
         return self.__characters
 
-    @parody.setter
+    @characters.setter
     def characters(self, chars):
         self.__characters = chars
 
@@ -244,7 +244,7 @@ class Doujinshi(object):
             for t in tag.contents:
 
                 # Query the child elements' href attribute and append their contents
-                # to the appropriate list in the 'info' dict
+                # to the appropriate list
                 try:
                     if (match := re.search(tag_rx, t.attrs['href'])):
                         if match.group(1) == 'parody':
