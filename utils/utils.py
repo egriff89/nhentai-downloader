@@ -43,39 +43,53 @@ def verify_tags(doujinshi):
         for parody in doujinshi.parody:
             if parody is None: pass
             else: print(f'"{parody}"', end=' ')
+    else:
+        print(f'Parodies: Original', end=' ')
 
     if doujinshi.verify_tag_category('characters'):
         print(f'\nCharacters: ', end='')
         for ch in doujinshi.characters: 
             if ch is None: pass
             else: print(f'"{ch}"', end=' ')
+    else:
+        print(f'\nCharacters: N/A', end=' ')
 
     if doujinshi.verify_tag_category('tags'):
         print(f'\nTags: ', end='')
         for tag in doujinshi.tags: 
             if tag is None: pass
             else: print(f'"{tag}"', end=' ')
+    else:
+        print(f'\nTags: N/A', end=' ')
 
     if doujinshi.verify_tag_category('artists'):
         print(f'\nArtists: ', end='')
         for artist in doujinshi.artists: 
             if artist is None: print('N/A', end=' ')
             else: print(f'"{artist}"', end=' ')
+    else:
+        print(f'\nArtists: N/A', end='')
 
     if doujinshi.verify_tag_category('groups'):
         print(f'\nGroups: ', end='')
         for group in doujinshi.groups: 
             if group is None: print('N/A', end=' ')
             else: print(f'"{group}"', end=' ')
+    else:
+        print(f'\nGroups: N/A', end='')
 
     if doujinshi.verify_tag_category('languages'):
         print(f'\nLanguages: ', end='')
         for lang in doujinshi.languages: 
             if lang is None: pass
             else: print(f'"{lang}"', end=' ')
+    else:
+        print(f'\nLanguages: N/A', end='')
 
     if doujinshi.verify_tag_category('categories'):
         print(f'\nCategories: ', end='')
         for cat in doujinshi.categories: 
             if cat is None: pass
             else: print(f'"{cat}"', end=' ')
+    else:
+        print(f'\nCategories: N/A', end='')

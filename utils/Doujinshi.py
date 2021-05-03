@@ -6,13 +6,15 @@ import os
 import re
 
 class Doujinshi(object):
-    def __init__(self, title='nhentai', code=0):
+    def __init__(self, title='nhentai', code=0, collection_dir='collection'):
         self.session    = FuturesSession()
+        self.collection = collection_dir
         self.title      = title
         self.code       = code
         self.url        = f'https://nhentai.net/g/{self.code}'
         self.pages      = 0
         self.uploaded   = ''
+        self.__dl_path    = ''      # Relative to collection_dir
         self.__parody     = []
         self.__characters = []
         self.__tags       = []
@@ -21,6 +23,14 @@ class Doujinshi(object):
         self.__languages  = []
         self.__categories = []
         self.__images     = []
+
+    @property
+    def dl_path(self):
+        return self.__dl_path
+
+    @dl_path.setter
+    def dl_path(self, dl_path):
+        self.__dl_path = dl_path
 
     @property
     def parody(self):
@@ -172,7 +182,7 @@ class Doujinshi(object):
         soup = BeautifulSoup(response, 'html.parser')
 
         img_container = soup.find('section', {'id': 'image-container'})
-        print(img_container.find('a').contents[0].attrs['src'])
+        # print(img_container.find('a').contents[0].attrs['src'])
         self.images.append(img_container.find('a').contents[0].attrs['src'])
  
 
@@ -221,12 +231,16 @@ class Doujinshi(object):
         if not valid: 
             self.title = self.title.replace(symbol, '-')
 
-        # Create the download directory
-        collection_path = f'collection/{self.code}-{self.title}'
-        os.makedirs(collection_path, exist_ok=True)
+        # Create the download directory        
+        try:
+            self.dl_path = f'{self.parody[0]}/{self.code}-{self.title}'
+        except IndexError:
+            self.dl_path = f'original/{self.code}-{self.title}'
+        
+        os.makedirs(f'{self.collection}/{self.dl_path}', exist_ok=True)
 
         # Download page
-        with open(f'{collection_path}/{self.code}-{page}.{img_ext}', mode='wb') as file:
+        with open(f'{self.collection}/{self.dl_path}/{self.code}-{page}.{img_ext}', mode='wb') as file:
             dl = requests.get(str(filename))
             file.write(dl.content)
 
