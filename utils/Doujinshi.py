@@ -1,5 +1,6 @@
 from requests_futures.sessions import FuturesSession
 from bs4 import BeautifulSoup
+from utils import utils
 import requests
 import os
 import re
@@ -131,9 +132,7 @@ class Doujinshi(object):
         :param page: Parsed contents of doujinshi homepage
         """
         element = page.find(name='title').contents[0]
-        match = re.search(r'^([\w\d\W]+)\u00BB', element, flags=re.IGNORECASE)
-
-        if match:
+        if (match := re.search(r'^([\w\d\W]+)\u00BB', element, flags=re.IGNORECASE)):
             self.title = match.group(1).strip()
 
 
@@ -150,8 +149,7 @@ class Doujinshi(object):
         # and return it
         regex = re.compile(r'^(\d+)$')
         for span in fields:
-            match = re.search(regex, span.text)
-            if match: 
+            if (match := re.search(regex, span.text)): 
                 self.pages = int(match.group(1))
 
 
@@ -248,8 +246,7 @@ class Doujinshi(object):
                 # Query the child elements' href attribute and append their contents
                 # to the appropriate list in the 'info' dict
                 try:
-                    match = re.search(tag_rx, t.attrs['href'])
-                    if match:
+                    if (match := re.search(tag_rx, t.attrs['href'])):
                         if match.group(1) == 'parody':
                             self.parody.append(t.contents[0].text)
                         elif match.group(1) == 'character':
@@ -276,47 +273,7 @@ class Doujinshi(object):
 
         print(f'\nTitle: {self.title}')
 
-        if self.verify_tag_category('parody'): 
-            print(f'Parodies: ', end=' ')
-            for parody in self.parody:
-                if parody is None: pass
-                else: print(f'"{parody}"', end=' ')
-
-        if self.verify_tag_category('characters'):
-            print(f'\nCharacters: ', end='')
-            for ch in self.characters: 
-                if ch is None: pass
-                else: print(f'"{ch}"', end=' ')
-
-        if self.verify_tag_category('tags'):
-            print(f'\nTags: ', end='')
-            for tag in self.tags: 
-                if tag is None: pass
-                else: print(f'"{tag}"', end=' ')
-
-        if self.verify_tag_category('artists'):
-            print(f'\nArtists: ', end='')
-            for artist in self.artists: 
-                if artist is None: print('N/A', end=' ')
-                else: print(f'"{artist}"', end=' ')
-
-        if self.verify_tag_category('groups'):
-            print(f'\nGroups: ', end='')
-            for group in self.groups: 
-                if group is None: print('N/A', end=' ')
-                else: print(f'"{group}"', end=' ')
-
-        if self.verify_tag_category('languages'):
-            print(f'\nLanguages: ', end='')
-            for lang in self.languages: 
-                if lang is None: pass
-                else: print(f'"{lang}"', end=' ')
-
-        if self.verify_tag_category('categories'):
-            print(f'\nCategories: ', end='')
-            for cat in self.categories: 
-                if cat is None: pass
-                else: print(f'"{cat}"', end=' ')
+        utils.verify_tags(self)
 
         print(f'\nGallery ID: {self.code}')
         print(f'Pages: {self.pages}')
