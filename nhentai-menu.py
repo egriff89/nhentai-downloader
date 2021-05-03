@@ -65,16 +65,15 @@ def main():
 
         if archive == 'y':
             # Change to 'collection' directory. Prevents 'collection/<files>' folder structure in zip file
-            os.chdir('collection')
+            os.chdir(dj.collection)
 
             # Compress downloaded files into a zip file
-            collection_path = f'{dj.code}-{dj.title}'
-            print(f'Compressing to "{collection_path}.zip"...')
-            utils.compress(collection_path)
+            print(f'Compressing to "{dj.dl_path}.zip"...')
+            utils.compress(dj.dl_path)
 
             # Delete downloaded files as they're no longer needed
             print('Removing downloaded files...')
-            utils.remove_dir(collection_path)
+            utils.remove_dir(dj.dl_path)
 
             # Return to root project directory
             os.chdir('..')
